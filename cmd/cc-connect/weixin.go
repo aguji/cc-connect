@@ -89,7 +89,13 @@ func runWeixinSetup(args []string, requestedMode string) {
 	_ = fs.Parse(args)
 
 	initConfigPath(*configFile)
-	if _, err := os.Stat(config.ConfigPath); err != nil {
+	if _, err := os.Stat(config.ConfigPath); os.IsNotExist(err) {
+		if err := bootstrapConfig(config.ConfigPath); err != nil {
+			fmt.Fprintf(os.Stderr, "Error creating config: %v\n", err)
+			os.Exit(1)
+		}
+		fmt.Printf("Created default config at %s\n", config.ConfigPath)
+	} else if err != nil {
 		fmt.Fprintf(os.Stderr, "Error: config file not found at %s (%v)\n", config.ConfigPath, err)
 		os.Exit(1)
 	}
